@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LM Studio Watcher</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="logo-icon">⬡</span>
+      <span class="logo-text">LM Studio<br><small>Watcher</small></span>
+    </div>
+
+    <div class="status-card" id="server-status-card">
+      <div class="status-dot" id="status-dot"></div>
+      <div>
+        <div class="status-label" id="server-status-label">Connecting…</div>
+        <div class="status-sub" id="last-poll-label">—</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">Models</div>
+    <div id="model-list"></div>
+
+    <div class="sidebar-section" style="margin-top:auto">Proxy endpoint</div>
+    <div class="proxy-hint">
+      Point your app to:<br>
+      <code>http://localhost:8080/proxy/v1</code>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Top stat bar -->
+    <div class="stat-bar">
+      <div class="stat-tile">
+        <div class="stat-value" id="stat-requests">0</div>
+        <div class="stat-label">Total Requests</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value" id="stat-prompt-tokens">0</div>
+        <div class="stat-label">Prompt Tokens</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value" id="stat-completion-tokens">0</div>
+        <div class="stat-label">Completion Tokens</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value" id="stat-total-tokens">0</div>
+        <div class="stat-label">Total Tokens</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value" id="stat-avg-latency">—</div>
+        <div class="stat-label">Avg Latency (s)</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value" id="stat-tps">—</div>
+        <div class="stat-label">Avg Tok/s</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Completion Tokens / second <span class="chart-badge">live · 60 s window</span></div>
+        <canvas id="tokenChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Latency per Request <span class="chart-badge">last 20</span></div>
+        <canvas id="latencyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Request history -->
+    <div class="table-card">
+      <div class="chart-title">Recent Requests <span class="chart-badge" id="req-count-badge">0</span></div>
+      <div class="table-wrap">
+        <table id="req-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Model</th>
+              <th>Path</th>
+              <th>Prompt Tok</th>
+              <th>Completion Tok</th>
+              <th>Total Tok</th>
+              <th>Tok/s</th>
+              <th>Latency</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="req-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

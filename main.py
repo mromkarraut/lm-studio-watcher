@@ -161,7 +161,7 @@ async def _bypass_connect() -> tuple[asyncio.StreamReader, asyncio.StreamWriter]
         sock.setsockopt(_socket.SOL_SOCKET, _socket.SO_MARK, _BYPASS_MARK)
     except OSError:
         pass  # needs CAP_NET_ADMIN; see setup_intercept.sh
-    await asyncio.get_event_loop().sock_connect(sock, (LM_STUDIO_HOST, LM_STUDIO_PORT))
+    await asyncio.get_running_loop().sock_connect(sock, (LM_STUDIO_HOST, LM_STUDIO_PORT))
     return await asyncio.open_connection(sock=sock)
 
 

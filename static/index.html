@@ -6,6 +6,7 @@
   <title>LM Studio Watcher</title>
   <link rel="stylesheet" href="/static/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
   <!-- Sidebar -->
@@ -25,6 +26,13 @@
 
     <div class="sidebar-section">Models</div>
     <div id="model-list"></div>
+
+    <div class="sidebar-section">Public Link</div>
+    <div id="qr-section" class="qr-section" style="display:none">
+      <div id="qr-canvas"></div>
+      <a id="qr-url" class="qr-url" target="_blank" rel="noopener"></a>
+    </div>
+    <div id="qr-placeholder" class="proxy-hint" style="font-size:11px;color:var(--muted)">No tunnel active</div>
 
     <div class="sidebar-section" style="margin-top:auto">Proxy endpoint</div>
     <div class="proxy-hint">

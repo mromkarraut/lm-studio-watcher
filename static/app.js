@@ -154,6 +154,43 @@ function renderLatencyChart(requests) {
   latencyChart.update('none');
 }
 
+// ── QR Code ──────────────────────────────────────────────────────────
+
+let _qrInstance = null;
+let _qrCurrentUrl = null;
+
+function renderQR(url) {
+  const section     = document.getElementById('qr-section');
+  const placeholder = document.getElementById('qr-placeholder');
+  const urlEl       = document.getElementById('qr-url');
+
+  if (!url) {
+    section.style.display = 'none';
+    placeholder.style.display = '';
+    _qrCurrentUrl = null;
+    return;
+  }
+
+  placeholder.style.display = 'none';
+  section.style.display = '';
+  urlEl.textContent = url;
+  urlEl.href = url;
+
+  if (url === _qrCurrentUrl) return; // no change
+  _qrCurrentUrl = url;
+
+  const container = document.getElementById('qr-canvas');
+  container.innerHTML = '';
+  _qrInstance = new QRCode(container, {
+    text: url,
+    width: 180,
+    height: 180,
+    colorDark: '#e6edf3',
+    colorLight: '#161b22',
+    correctLevel: QRCode.CorrectLevel.M,
+  });
+}
+
 // ── WebSocket ────────────────────────────────────────────────────────
 
 let ws, reconnectMs = 1000;
@@ -176,6 +213,7 @@ function connect() {
     renderTable(msg.recent_requests || []);
     renderTokenChart(msg.token_timeseries || Array(60).fill(0));
     renderLatencyChart(msg.recent_requests || []);
+    renderQR(msg.tunnel_url || null);
 
     reconnectMs = 1000; // reset back-off on success
   };

@@ -25,6 +25,7 @@ LM_STUDIO_BASE = f"http://{LM_STUDIO_HOST}:{LM_STUDIO_PORT}"
 POLL_INTERVAL = 300  # seconds
 INTERCEPT_PORT = 1235  # iptables redirects :1234 → here
 _BYPASS_MARK = 1       # SO_MARK value that skips the iptables REDIRECT rule
+TUNNEL_URL_FILE = "/tmp/lm_watcher_tunnel.url"
 
 # ---------------------------------------------------------------------------
 # In-memory state
@@ -92,6 +93,14 @@ async def _broadcast_state() -> None:
     _ws_clients.difference_update(dead)
 
 
+def _get_tunnel_url() -> str | None:
+    try:
+        url = open(TUNNEL_URL_FILE).read().strip()
+        return url or None
+    except FileNotFoundError:
+        return None
+
+
 def _build_ws_payload() -> dict:
     return {
         "server_online": _state["server_online"],
@@ -100,6 +109,7 @@ def _build_ws_payload() -> dict:
         "totals": dict(_totals),
         "recent_requests": list(_requests)[-20:],
         "token_timeseries": list(_token_buckets),
+        "tunnel_url": _get_tunnel_url(),
     }
 
 

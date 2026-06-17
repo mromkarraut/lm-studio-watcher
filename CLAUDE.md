@@ -13,7 +13,7 @@ kill $(cat /tmp/lm_watcher.pid)
 sudo bash teardown_intercept.sh
 ```
 
-Logs: `/tmp/lm_watcher.log`. PID: `/tmp/lm_watcher.pid`.
+Logs: `/tmp/lm_watcher.log`. PID: `/tmp/lm_watcher.pid`. Tunnel log: `/tmp/lm_watcher_tunnel.log`. Tunnel PID: `/tmp/lm_watcher_tunnel.pid`.
 
 The iptables rule does not survive WSL restarts — the start script must be re-run each boot.
 

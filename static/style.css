@@ -168,6 +168,30 @@ body { display: flex; height: 100vh; overflow: hidden; }
   padding: 10px 4px;
 }
 
+.qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.qr-section #qr-canvas img,
+.qr-section #qr-canvas canvas {
+  border-radius: 8px;
+  display: block;
+}
+
+.qr-url {
+  font-size: 10px;
+  color: var(--accent);
+  word-break: break-all;
+  text-align: center;
+  text-decoration: none;
+}
+
+.qr-url:hover { text-decoration: underline; }
+
 .proxy-hint code {
   display: block;
   color: var(--accent);

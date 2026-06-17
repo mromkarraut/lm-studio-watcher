@@ -35,7 +35,8 @@ sudo bash "$SCRIPT_DIR/setup_intercept.sh"
 # Start the watcher
 echo "Starting LM Studio Watcher..."
 cd "$SCRIPT_DIR"
-python -m uvicorn main:app --host 0.0.0.0 --port 8080 &> "$LOG_FILE" &
+rm -f "$LOG_FILE"
+/home/omkar/venvs/bin/python3 -m uvicorn main:app --host 0.0.0.0 --port 8080 &> "$LOG_FILE" &
 echo $! > "$PID_FILE"
 
 sleep 2
@@ -48,16 +49,28 @@ else
 fi
 
 # Start Cloudflare Tunnel (optional — skip if cloudflared not found)
-if command -v cloudflared &>/dev/null; then
+CLOUDFLARED=$(command -v cloudflared 2>/dev/null || echo "/home/omkar/.local/bin/cloudflared")
+if [ -x "$CLOUDFLARED" ]; then
     echo "Starting Cloudflare Tunnel..."
-    cloudflared tunnel --url http://localhost:8080 --no-autoupdate &>"$TUNNEL_LOG" &
+    "$CLOUDFLARED" tunnel --url http://localhost:8080 --no-autoupdate &>"$TUNNEL_LOG" &
     echo $! > "$TUNNEL_PID_FILE"
-    sleep 3
-    # Extract the assigned URL from the log
-    TUNNEL_URL=$(grep -o 'https://[a-zA-Z0-9-]*\.trycloudflare\.com' "$TUNNEL_LOG" | head -1)
+    # Poll for the URL (up to 20 s)
+    TUNNEL_URL=""
+    for i in $(seq 1 20); do
+        TUNNEL_URL=$(grep -o 'https://[a-zA-Z0-9-]*\.trycloudflare\.com' "$TUNNEL_LOG" 2>/dev/null | head -1)
+        [ -n "$TUNNEL_URL" ] && break
+        sleep 1
+    done
     if [ -n "$TUNNEL_URL" ]; then
         echo "$TUNNEL_URL" > /tmp/lm_watcher_tunnel.url
         echo "Cloudflare Tunnel: $TUNNEL_URL"
+        /home/omkar/venvs/bin/python3 -c "
+import qrcode, sys
+qr = qrcode.QRCode(border=1)
+qr.add_data(sys.argv[1])
+qr.make(fit=True)
+qr.print_ascii(invert=True)
+" "$TUNNEL_URL"
     else
         rm -f /tmp/lm_watcher_tunnel.url
         echo "Tunnel started (PID $(cat "$TUNNEL_PID_FILE")) — check $TUNNEL_LOG for URL"

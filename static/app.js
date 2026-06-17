@@ -125,9 +125,11 @@ function renderTable(requests) {
   const tbody = document.getElementById('req-tbody');
   tbody.innerHTML = requests.map(r => {
     const ok = r.status >= 200 && r.status < 300;
+    const via = r.source === 'direct' ? '<span class="tag loaded">direct</span>' : '<span class="tag">proxy</span>';
     return `
       <tr>
         <td>${fmtTs(r.ts)}</td>
+        <td>${via}</td>
         <td class="td-model" title="${r.model}">${r.model}</td>
         <td class="td-path">${r.path}</td>
         <td>${fmtNum(r.prompt_tokens)}</td>

@@ -12,7 +12,7 @@ INTERCEPT_PORT=1235
 MARK=1
 
 # Grant CAP_NET_ADMIN to the active Python so SO_MARK works without sudo
-PYTHON=$(which python3 || which python)
+PYTHON=$(readlink -f "$(which python3 || which python)")
 sudo setcap cap_net_admin=eip "$PYTHON"
 
 # Install iptables redirect rule (idempotent check)

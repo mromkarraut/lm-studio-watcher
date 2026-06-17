@@ -22,7 +22,7 @@ from fastapi.staticfiles import StaticFiles
 LM_STUDIO_HOST = "127.0.0.1"
 LM_STUDIO_PORT = 1234
 LM_STUDIO_BASE = f"http://{LM_STUDIO_HOST}:{LM_STUDIO_PORT}"
-POLL_INTERVAL = 5  # seconds
+POLL_INTERVAL = 300  # seconds
 INTERCEPT_PORT = 1235  # iptables redirects :1234 → here
 _BYPASS_MARK = 1       # SO_MARK value that skips the iptables REDIRECT rule
 
@@ -54,20 +54,29 @@ _totals = {"prompt_tokens": 0, "completion_tokens": 0, "requests": 0, "errors": 
 # Background poller
 # ---------------------------------------------------------------------------
 
-async def _poll_models() -> None:
-    async with httpx.AsyncClient(timeout=5.0) as client:
-        while True:
-            try:
+_poll_limits = httpx.Limits(max_connections=2, max_keepalive_connections=1)
+_poll_lock = asyncio.Lock()
+
+
+async def _do_poll() -> None:
+    async with _poll_lock:
+        try:
+            async with httpx.AsyncClient(timeout=5.0, limits=_poll_limits) as client:
                 r = await client.get(f"{LM_STUDIO_BASE}/api/v0/models")
                 data = r.json()
                 _state["models"] = data.get("data", [])
                 _state["server_online"] = True
                 _state["last_poll"] = time.time()
-            except Exception:
-                _state["server_online"] = False
-                _state["models"] = []
-            await _broadcast_state()
-            await asyncio.sleep(POLL_INTERVAL)
+        except Exception:
+            _state["server_online"] = False
+            _state["models"] = []
+        await _broadcast_state()
+
+
+async def _poll_models() -> None:
+    while True:
+        await _do_poll()
+        await asyncio.sleep(POLL_INTERVAL)
 
 
 async def _broadcast_state() -> None:
@@ -121,6 +130,7 @@ async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     _ws_clients.add(ws)
     await ws.send_text(json.dumps(_build_ws_payload()))
+    asyncio.create_task(_do_poll())
     try:
         while True:
             await ws.receive_text()
